@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色调：深墨色 + 朱砂红 + 米白 -->
+    <color name="ink_black">#FF1A1A1A</color>
+    <color name="ink_dark">#FF2B2B2B</color>
+    <color name="ink_medium">#FF3D3D3D</color>
+    <color name="ink_light">#FF5C5C5C</color>
+    <color name="ink_fade">#FF8A8A8A</color>
+
+    <!-- 朱砂系 -->
+    <color name="cinnabar">#FFB83A3A</color>
+    <color name="cinnabar_dark">#FF8B2A2A</color>
+    <color name="cinnabar_light">#FFD45E5E</color>
+    <color name="cinnabar_bright">#FFE07070</color>
+    <color name="cinnabar_deep">#FF6B1E1E</color>
+
+    <!-- 米白/纸色系 -->
+    <color name="rice_white">#FFF5F0E6</color>
+    <color name="rice_light">#FFFAF6EE</color>
+    <color name="rice_bright">#FFFFFBF4</color>
+    <color name="paper">#FFEFE8D8</color>
+    <color name="paper_dark">#FFE2D9C5</color>
+
+    <!-- 装饰金/铜色系 -->
+    <color name="antique_gold">#FFB8956A</color>
+    <color name="antique_gold_light">#FFD4B888</color>
+    <color name="antique_gold_deep">#FF8A6D45</color>
+    <color name="bronze_line">#FFA89070</color>
+    <color name="bronze_line_light">#FFC4AC8A</color>
+
+    <!-- 吉凶颜色 -->
+    <color name="ji_green">#FF3A7D44</color>
+    <color name="ji_green_light">#FF5A9D64</color>
+    <color name="half_yellow">#FFC9A227</color>
+    <color name="half_yellow_light">#FFE9C247</color>
+    <color name="xiong_red">#FFB83A3A</color>
+    <color name="xiong_red_light">#FFD45E5E</color>
+
+    <!-- 功能色（浅色主题） -->
+    <color name="surface">#FFFAF6EE</color>
+    <color name="surface_variant">#FFEFE8D8</color>
+    <color name="surface_elevated">#FFFFFBF4</color>
+    <color name="on_surface">#FF1A1A1A</color>
+    <color name="on_surface_variant">#FF5C5C5C</color>
+    <color name="outline">#FFBDB5A3</color>
+    <color name="outline_light">#FFD4CCBA</color>
+    <color name="background">#FFF5F0E6</color>
+    <color name="background_gradient_top">#FFF8F3E9</color>
+    <color name="background_gradient_bottom">#FFEFE7D5</color>
+
+    <!-- 暗色主题 -->
+    <color name="dark_ink_black">#FF0D0D0D</color>
+    <color name="dark_ink_dark">#FF1A1A1A</color>
+    <color name="dark_ink_surface">#FF1E1E1E</color>
+    <color name="dark_ink_surface_variant">#FF2A2A2A</color>
+    <color name="dark_on_surface">#FFE8E0D0</color>
+    <color name="dark_on_surface_variant">#FFA89E8C</color>
+    <color name="dark_outline">#FF4A4438</color>
+    <color name="dark_background">#FF0D0D0D</color>
+    <color name="dark_cinnabar">#FFD45E5E</color>
+    <color name="dark_antique_gold">#FFC4A878</color>
+
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

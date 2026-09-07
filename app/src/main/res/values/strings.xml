@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name">小六壬时课</string>
+    <string name="app_subtitle">民俗文化娱乐参考</string>
+
+    <!-- 免责声明 -->
+    <string name="disclaimer_short">本工具仅供民俗文化娱乐，不构成任何决策建议</string>
+    <string name="disclaimer_full">本工具仅供中国传统民俗文化研究与娱乐参考，不构成任何人生决策、医疗、法律、财务建议，请勿过度迷信。小六壬属于民俗占卜文化范畴，结果仅供参考，切勿作为现实决策依据。</string>
+
+    <!-- 首页 -->
+    <string name="current_time">当前时间</string>
+    <string name="solar_date">公历</string>
+    <string name="lunar_date">农历</string>
+    <string name="jieqi_month">节气月</string>
+    <string name="shichen">时辰</string>
+    <string name="one_key_divine">一 键 起 课</string>
+    <string name="custom_time_divine">自定义时间起课</string>
+    <string name="knowledge_base">六宫知识库</string>
+    <string name="history">历史记录</string>
+    <string name="about">关于</string>
+
+    <!-- 结果页 -->
+    <string name="divine_result">测算结果</string>
+    <string name="month_palace">月宫·起因</string>
+    <string name="day_palace">日宫·过程</string>
+    <string name="time_palace">时宫·结果</string>
+    <string name="final_result">最终结果</string>
+    <string name="ancient_formula">古诀原文</string>
+    <string name="core_meaning">核心象义</string>
+    <string name="category_reading">分类解读</string>
+    <string name="comprehensive_judgment">综合断语</string>
+    <string name="reference_info">参考信息</string>
+    <string name="suitable">宜</string>
+    <string name="avoid">忌</string>
+    <string name="numbers">对应数字</string>
+    <string name="direction">参考方位</string>
+
+    <!-- 分类 -->
+    <string name="cat_work">办事谋望</string>
+    <string name="cat_money">求财交易</string>
+    <string name="cat_lost">失物找寻</string>
+    <string name="cat_traveler">行人音讯</string>
+    <string name="cat_love">感情婚恋</string>
+    <string name="cat_health">健康疾病</string>
+
+    <!-- 吉凶等级 -->
+    <string name="level_big_ji">大吉</string>
+    <string name="level_small_ji">小吉</string>
+    <string name="level_half">半吉半凶</string>
+    <string name="level_xiong">凶</string>
+    <string name="level_big_xiong">大凶</string>
+
+    <!-- 关于页 -->
+    <string name="about_title">关于本工具</string>
+    <string name="algorithm_intro">算法说明</string>
+    <string name="privacy_intro">隐私说明</string>
+    <string name="version">版本</string>
+    <string name="privacy_content">本应用为纯离线工具，不联网、不收集任何用户个人信息，所有数据均存储于本地设备。</string>
+    <string name="algorithm_content">采用民间流传最广的基础版小六壬（六壬时课/马前课）算法，严格遵循「大安起正月、月上起日、日上起时」正统三步法。月份以二十四节气划分，日子以23:00子时为界。仅适合测算近期日常小事。</string>
+
+    <!-- 历史 -->
+    <string name="history_empty">暂无测算记录</string>
+    <string name="clear_all">清空全部</string>
+    <string name="delete">删除</string>
+    <string name="confirm_delete">确认删除？</string>
+    <string name="confirm_clear">确认清空所有记录？</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确认</string>
+
+    <!-- 知识库 -->
+    <string name="palace_position">手掌定位</string>
+    <string name="wuxing_shensha">五行神煞</string>
+    <string name="ji_xiong">吉凶定性</string>
+    <string name="mnemonic">掌诀口诀</string>
+    <string name="mnemonic_position">大安根，留连尖；速喜中指尖，赤口无名尖；小吉无名根，空亡中指根</string>
+    <string name="mnemonic_order">大安留连速喜，赤口小吉空亡</string>
+    <string name="divine_method">起课方法</string>
+    <string name="divine_method_content">以大安起正月，顺时针点数到问事月份定月宫；以月宫为初一顺数到问事日期定日宫；以日宫为子时顺数到问事时辰定时宫。三宫结合断吉凶。</string>
+
+    <!-- 通用 -->
+    <string name="back">返回</string>
+    <string name="save">保存</string>
+    <string name="calculating">正在推算…</string>
+    <string name="not_supported">暂不支持该时间范围（1900-2100年）</string>
+</resources>

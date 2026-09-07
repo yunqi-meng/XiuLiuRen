@@ -1,0 +1,40 @@
+# Gradle / Android 构建产物
+build/
+.gradle/
+app/build/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Maven 构建产物（boke 子项目）
+target/
+boke/**/target/
+boke/**/uploads/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# 本地配置（含 SDK 路径，机器特定）
+local.properties
+
+# 工具缓存
+.codegraph/
+.workbuddy/
+.codeartsdoer/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志
+*.log
+
+# Keystore（签名密钥，禁止入库）
+*.jks
+*.keystore
