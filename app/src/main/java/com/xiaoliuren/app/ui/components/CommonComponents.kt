@@ -128,34 +128,57 @@ fun BottomInsetSpacer() {
 // ==================== 通用结构 ====================
 
 /**
- * 免责提示条（常驻顶部）。
- * 深朱砂底色全出血铺到状态栏后面，只有文字避让系统栏，视觉上更完整。
+ * 免责提示条。
+ *
+ * 只有整页最顶端的调用方（首页）才需要 [applyStatusBarInset]：
+ * 状态栏区域留给页面底色，而不是让朱砂条铺到状态栏后面 ——
+ * 状态栏图标的明暗只由「当前是否暗色主题」决定（浅色主题 → 深色图标），
+ * 而朱砂条在两种主题下都是深红。若让朱砂条盖住状态栏，浅色主题下
+ * 深色图标压在深红上几乎看不见。
+ *
+ * 顶栏下方的调用方要传 false：insets 的消费是沿着组合树向下的，
+ * 顶栏和本组件是兄弟节点，顶栏吃掉的状态栏高度这里看不到，会重复加一次。
  */
 @Composable
-fun DisclaimerBar(text: String, modifier: Modifier = Modifier) {
-    Box(
+fun DisclaimerBar(
+    text: String,
+    modifier: Modifier = Modifier,
+    applyStatusBarInset: Boolean = false
+) {
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .drawBehind {
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(CinnabarDeep, CinnabarDark)
-                    )
-                )
-            }
+            .then(
+                if (applyStatusBarInset) {
+                    Modifier.windowInsetsPadding(WindowInsets.statusBars)
+                } else {
+                    Modifier
+                }
+            )
     ) {
-        Text(
-            text = text,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(horizontal = 16.dp, vertical = 7.dp),
-            fontSize = 11.sp,
-            textAlign = TextAlign.Center,
-            lineHeight = 14.sp,
-            color = RiceWhite,
-            letterSpacing = 0.5.sp
-        )
+                .drawBehind {
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(CinnabarDeep, CinnabarDark)
+                        )
+                    )
+                }
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 7.dp),
+                fontSize = 11.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 14.sp,
+                color = RiceWhite,
+                letterSpacing = 0.5.sp
+            )
+        }
     }
 }
 

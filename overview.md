@@ -42,6 +42,20 @@ Compose 文本的取色优先级是 **`Text(color =)` > `style.color` > `LocalCo
 - `DisclaimerBar` 改为「背景全出血 + 文字避让状态栏」；
 - 6 个带顶栏的页面内容区加 `navigationBarsInset()`（顶栏自身的 `TopAppBarDefaults.windowInsets` 已自动处理状态栏）。
 
+### P1 · 首页状态栏图标压在深朱砂条上看不清
+
+`DisclaimerBar` 原本做成「深朱砂底色全出血铺到状态栏后面」，看起来很完整 ——
+但状态栏图标的明暗**只由「当前是否暗色主题」决定**（浅色主题 → 深色图标），
+而朱砂条在两种主题下都是深红。
+
+结果：浅色主题下，深色状态栏图标压在 `#7E2A2A` 深红上基本读不出来。
+
+**修复**：状态栏那一块高度交还给页面底色，朱砂条从状态栏下沿开始。
+这样图标明暗永远和它背后的颜色对得上，7 个页面也统一了。
+`DisclaimerBar` 增加 `applyStatusBarInset` 参数，只有整页最顶端的首页传 `true` ——
+insets 的消费是沿着组合树**向下**的，顶栏和本组件是兄弟节点，
+顶栏吃掉的状态栏高度这里看不到，否则会重复加一次。
+
 ### P1 · 深色主题下「时宫」高亮卡片是一块刺眼白斑
 
 `ThreePalaceRow` / `KnowledgeDetailScreen` / `KnowledgeScreen` 用的是 `levelColorLight()`，
@@ -143,9 +157,21 @@ Compose 文本的取色优先级是 **`Text(color =)` > `style.color` > `LocalCo
 
 ```
 gradle :app:compileDebugKotlin   → BUILD SUCCESSFUL
+gradle :app:assembleDebug        → BUILD SUCCESSFUL   (app-debug.apk, 16.8 MB)
 ```
 
 零新增依赖，全部使用 Compose 内置 API（`Brush` / `drawBehind` / `shadow` / `border` / `graphicsLayer` / `WindowInsets`）。
+
+### 真机级验证：模拟器（Medium_Phone 1080×2400，API 36）
+
+装 APK 后分浅色 / 深色两轮截图核对，重点确认三件事：
+
+| 检查项 | 结果 |
+|---|---|
+| 深色主题下顶栏标题、卡片正文、吉凶标签 | 浅色文字压在深色底上，清晰可读（修复前标题是 `#2B2B2B` 压 `#0D0D0D`） |
+| `LevelTag` 黄底文字 | 「半吉半凶」为墨字压黄底，不再糊成一片 |
+| 状态栏图标 vs 背景 | 浅色主题浅底深图标 / 深色主题深底浅图标，首页朱砂条不再压住图标 |
+| edge-to-edge | 顶栏返回键与标题避让状态栏；列表底部不被导航栏遮挡 |
 
 ## 五、已知遗留
 

@@ -64,7 +64,10 @@ fun HomeScreen(
             .background(backgroundGradient())
             .verticalScroll(rememberScrollState())
     ) {
-        DisclaimerBar(text = "本工具仅供民俗文化娱乐，不构成任何决策建议")
+        DisclaimerBar(
+            text = "本工具仅供民俗文化娱乐，不构成任何决策建议",
+            applyStatusBarInset = true
+        )
 
         // ===== 标题区 =====
         Column(
