@@ -36,6 +36,12 @@ class HistoryRepository(private val dao: HistoryDao) {
 
     suspend fun deleteById(id: Long) = dao.deleteById(id)
 
+    /**
+     * 恢复一条被删除的记录（用于「撤销删除」）。
+     * DAO 的 insert 是 REPLACE 策略，因此原 id 会原样写回。
+     */
+    suspend fun restore(record: HistoryRecord) = dao.insert(record)
+
     suspend fun clearAll() = dao.clearAll()
 
     private fun formatSolarTime(result: DivineResult): String {

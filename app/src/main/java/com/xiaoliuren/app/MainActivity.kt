@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -18,9 +17,10 @@ import com.xiaoliuren.app.viewmodel.HistoryViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // 无参 enableEdgeToEdge() 默认就是 SystemBarStyle.auto(透明, 透明)，
+        // 会自动根据系统深浅色切换状态栏/导航栏图标明暗。
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, true)
+        super.onCreate(savedInstanceState)
 
         val database = AppDatabase.getInstance(this)
         val repository = HistoryRepository.fromDatabase(database)

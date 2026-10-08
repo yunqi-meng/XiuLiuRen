@@ -1,6 +1,12 @@
 package com.xiaoliuren.app.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavType
@@ -9,12 +15,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.xiaoliuren.app.core.DivineResult
-import com.xiaoliuren.app.data.FullJudgment
-import com.xiaoliuren.app.data.HistoryRepository
 import com.xiaoliuren.app.ui.screens.*
+import com.xiaoliuren.app.ui.theme.Motion
 import com.xiaoliuren.app.viewmodel.DivineViewModel
 import com.xiaoliuren.app.viewmodel.HistoryViewModel
+import com.xiaoliuren.app.data.HistoryRepository
 
 object Routes {
     const val HOME = "home"
@@ -28,6 +33,8 @@ object Routes {
     fun knowledgeDetail(index: Int) = "knowledge_detail/$index"
 }
 
+private const val T = 320
+
 @Composable
 fun AppNavigation(
     divineViewModel: DivineViewModel,
@@ -39,7 +46,23 @@ fun AppNavigation(
     val lastResult by divineViewModel.lastResult.collectAsState()
     val lastJudgment by divineViewModel.lastJudgment.collectAsState()
 
-    NavHost(navController = navController, startDestination = Routes.HOME) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.HOME,
+        // 前进：新页从右侧滑入 + 渐显；返回：反向滑出
+        enterTransition = {
+            slideInHorizontally(tween(Motion.LONG)) { it / 4 } + fadeIn(tween(Motion.LONG))
+        },
+        exitTransition = {
+            fadeOut(tween(Motion.MEDIUM))
+        },
+        popEnterTransition = {
+            fadeIn(tween(Motion.MEDIUM))
+        },
+        popExitTransition = {
+            slideOutHorizontally(tween(Motion.LONG)) { it / 4 } + fadeOut(tween(Motion.LONG))
+        }
+    ) {
 
         composable(Routes.HOME) {
             HomeScreen(
@@ -82,8 +105,8 @@ fun AppNavigation(
                     onBack = { navController.popBackStack() }
                 )
             } else {
-                // 无数据时返回首页
-                navController.popBackStack()
+                // 不能在组合期间直接 popBackStack（会在每次重组时重复执行），放进副作用里
+                LaunchedEffect(Unit) { navController.popBackStack() }
             }
         }
 

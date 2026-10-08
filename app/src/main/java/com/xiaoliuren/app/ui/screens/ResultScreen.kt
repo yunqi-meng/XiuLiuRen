@@ -1,34 +1,28 @@
 package com.xiaoliuren.app.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
-
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xiaoliuren.app.core.DivineEngine
@@ -53,129 +47,147 @@ fun ResultScreen(
 
     val timePalace = judgment.timePalace
     val lunar = result.lunarDate!!
+    var section = 0
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundGradient())
     ) {
-        TopAppBar(
-            title = {
-                Text(
-                    "测算结果",
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.sp
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "返回")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                titleContentColor = inkDarkColor(),
-                navigationIconContentColor = inkDarkColor()
-            )
-        )
+        AppTopBar(title = "测算结果", onBack = onBack)
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .navigationBarsInset()
                 .padding(horizontal = 18.dp)
         ) {
             // 起课时间信息
-            TimeSummaryCard(result = result, lunar = lunar)
+            AnimatedEntry(index = section++) {
+                TimeSummaryCard(result = result, lunar = lunar)
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // 三宫总览
-            SectionTitle("三宫总览")
-            Spacer(modifier = Modifier.height(10.dp))
-            ThreePalaceRow(judgment = judgment)
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("三宫总览")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ThreePalaceRow(judgment = judgment)
+                }
+            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            DecorativeDivider()
             Spacer(modifier = Modifier.height(20.dp))
 
             // 古诀原文
-            SectionTitle("古诀原文")
-            Spacer(modifier = Modifier.height(10.dp))
-            OrnateCard(accentColor = AntiqueGold) {
-                Text(
-                    text = timePalace.ancientFormula,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = inkDarkColor(),
-                    lineHeight = 24.sp,
-                    letterSpacing = 0.5.sp
-                )
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("古诀原文")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OrnateCard(accentColor = AntiqueGold) {
+                        Text(
+                            text = timePalace.ancientFormula,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = inkDarkColor(),
+                            lineHeight = 24.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
             // 核心象义
-            SectionTitle("核心象义")
-            Spacer(modifier = Modifier.height(10.dp))
-            InfoCard {
-                Text(
-                    text = timePalace.coreMeaning,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = inkDarkColor(),
-                    lineHeight = 24.sp
-                )
-                if (timePalace.supplement.isNotEmpty()) {
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("核心象义")
                     Spacer(modifier = Modifier.height(10.dp))
-                    DecorativeDivider()
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "补充：${timePalace.supplement}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = onSurfaceVariantColor()
-                    )
+                    InfoCard {
+                        Text(
+                            text = timePalace.coreMeaning,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = inkDarkColor(),
+                            lineHeight = 24.sp
+                        )
+                        if (timePalace.supplement.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            DecorativeDivider()
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "补充：${timePalace.supplement}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = onSurfaceVariantColor()
+                            )
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
             // 分类解读
-            SectionTitle("分类解读")
-            Spacer(modifier = Modifier.height(10.dp))
-            CategoryReadings(palace = timePalace)
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("分类解读")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    CategoryReadings(palace = timePalace)
+                }
+            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            DecorativeDivider()
             Spacer(modifier = Modifier.height(20.dp))
 
             // 综合断语
-            SectionTitle("综合断语")
-            Spacer(modifier = Modifier.height(10.dp))
-            OrnateCard(accentColor = levelColor(timePalace.jiXiongLevel)) {
-                Text(
-                    text = judgment.comprehensive,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = inkDarkColor(),
-                    lineHeight = 25.sp,
-                    letterSpacing = 0.3.sp
-                )
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("综合断语")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OrnateCard(accentColor = levelColor(timePalace.jiXiongLevel)) {
+                        Text(
+                            text = judgment.comprehensive,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = inkDarkColor(),
+                            lineHeight = 25.sp,
+                            letterSpacing = 0.3.sp
+                        )
+                    }
+                    if (judgment.wuxingRelation.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        InfoCard {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(4.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(AntiqueGold)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "五行生克：${judgment.wuxingRelation}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = onSurfaceVariantColor(),
+                                    lineHeight = 22.sp
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
-            // 五行生克分析
-            if (judgment.wuxingRelation.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                InfoCard {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(AntiqueGold)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 应期
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("应期参考")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    InfoCard {
                         Text(
-                            text = "五行生克：${judgment.wuxingRelation}",
+                            text = judgment.timing,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = onSurfaceVariantColor(),
+                            color = inkDarkColor(),
                             lineHeight = 22.sp
                         )
                     }
@@ -184,38 +196,25 @@ fun ResultScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 应期
-            SectionTitle("应期参考")
-            Spacer(modifier = Modifier.height(10.dp))
-            InfoCard {
-                Text(
-                    text = judgment.timing,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = inkDarkColor(),
-                    lineHeight = 22.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
             // 参考信息
-            SectionTitle("参考信息")
-            Spacer(modifier = Modifier.height(10.dp))
-            InfoCard {
-                YiJiRow(suitable = timePalace.suitable, avoid = timePalace.avoid)
-                Spacer(modifier = Modifier.height(12.dp))
-                DecorativeDivider()
-                Spacer(modifier = Modifier.height(12.dp))
-                KeyValueRow(key = "对应数字", value = timePalace.numbers.joinToString("、"))
-                Spacer(modifier = Modifier.height(10.dp))
-                KeyValueRow(key = "参考方位", value = timePalace.direction)
+            AnimatedEntry(index = section++) {
+                Column {
+                    SectionTitle("参考信息")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    InfoCard {
+                        YiJiRow(suitable = timePalace.suitable, avoid = timePalace.avoid)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        DecorativeDivider()
+                        Spacer(modifier = Modifier.height(12.dp))
+                        KeyValueRow(key = "对应数字", value = timePalace.numbers.joinToString("、"))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        KeyValueRow(key = "参考方位", value = timePalace.direction)
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // 底部娱乐提示
             EntertainmentFooter()
-
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
@@ -238,7 +237,7 @@ private fun TimeSummaryCard(result: DivineResult, lunar: com.xiaoliuren.app.core
             SealStamp(text = "課", size = 36, color = AntiqueGold)
         }
         Spacer(modifier = Modifier.height(14.dp))
-        KeyValueRow(key = "公历", value = "${result.solarYear}年${result.solarMonth}月${result.solarDay}日 ${String.format("%02d", result.solarHour)}:${String.format("%02d", result.solarMinute)}")
+        KeyValueRow(key = "公历", value = "${result.solarYear}年${result.solarMonth}月${result.solarDay}日 ${"%02d".format(result.solarHour)}:${"%02d".format(result.solarMinute)}")
         Spacer(modifier = Modifier.height(10.dp))
         KeyValueRow(key = "农历", value = LunarCalendar.formatLunar(lunar))
         Spacer(modifier = Modifier.height(10.dp))
@@ -265,27 +264,9 @@ private fun ThreePalaceRow(judgment: FullJudgment) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        PalaceCard(
-            title = "月宫·起因",
-            palace = judgment.monthPalace,
-            highlight = false,
-            step = "一",
-            modifier = Modifier.weight(1f)
-        )
-        PalaceCard(
-            title = "日宫·过程",
-            palace = judgment.dayPalace,
-            highlight = false,
-            step = "二",
-            modifier = Modifier.weight(1f)
-        )
-        PalaceCard(
-            title = "时宫·结果",
-            palace = judgment.timePalace,
-            highlight = true,
-            step = "三",
-            modifier = Modifier.weight(1f)
-        )
+        PalaceCard("月宫·起因", judgment.monthPalace, false, "一", Modifier.weight(1f))
+        PalaceCard("日宫·过程", judgment.dayPalace, false, "二", Modifier.weight(1f))
+        PalaceCard("时宫·结果", judgment.timePalace, true, "三", Modifier.weight(1f))
     }
 }
 
@@ -297,45 +278,29 @@ private fun PalaceCard(
     step: String,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (highlight) levelColor(palace.jiXiongLevel) else outlineColor()
-    val borderWidth = if (highlight) 2.dp else 1.dp
     val accentColor = if (highlight) levelColor(palace.jiXiongLevel) else AntiqueGold
 
     Surface(
-        modifier = modifier
-            .shadow(
-                elevation = if (highlight) 6.dp else 3.dp,
-                shape = RoundedCornerShape(14.dp),
-                ambientColor = Color.Black.copy(alpha = 0.04f),
-                spotColor = if (highlight) levelColor(palace.jiXiongLevel).copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
-            ),
+        modifier = modifier.shadow(
+            elevation = if (highlight) 5.dp else 2.dp,
+            shape = RoundedCornerShape(14.dp),
+            ambientColor = Color.Black.copy(alpha = 0.04f),
+            spotColor = if (highlight) accentColor.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.07f)
+        ),
         shape = RoundedCornerShape(14.dp),
-        color = if (highlight) levelColorLight(palace.jiXiongLevel) else surfaceColor(),
-        border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor.copy(alpha = if (highlight) 0.6f else 0.3f))
+        // 高亮卡片的浅色底必须随主题切换，否则暗色模式下会是一块刺眼的白斑
+        color = if (highlight) levelSurfaceColor(palace.jiXiongLevel) else surfaceColor(),
+        border = androidx.compose.foundation.BorderStroke(
+            if (highlight) 1.5.dp else 0.5.dp,
+            accentColor.copy(alpha = if (highlight) 0.55f else 0.3f)
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .drawBehind {
-                    if (highlight) {
-                        // 顶部装饰条
-                        drawRect(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    accentColor.copy(alpha = 0.7f),
-                                    Color.Transparent
-                                )
-                            ),
-                            topLeft = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            size = androidx.compose.ui.geometry.Size(size.width, 3f)
-                        )
-                    }
-                }
-                .padding(14.dp),
+                .padding(vertical = 14.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 步骤序号
             Box(
                 modifier = Modifier
                     .size(20.dp)
@@ -343,34 +308,20 @@ private fun PalaceCard(
                     .background(accentColor.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = step,
-                    fontSize = 10.sp,
-                    color = accentColor,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(step, fontSize = 10.sp, color = accentColor, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = title,
-                fontSize = 11.sp,
-                color = onSurfaceVariantColor(),
-                letterSpacing = 0.5.sp
-            )
+            Text(title, fontSize = 11.sp, color = onSurfaceVariantColor(), letterSpacing = 0.5.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = palace.palaceName,
                 fontSize = if (highlight) 24.sp else 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (highlight) levelColor(palace.jiXiongLevel) else inkDarkColor(),
+                color = if (highlight) accentColor else inkDarkColor(),
                 letterSpacing = 1.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = palace.wuxingShensha,
-                fontSize = 11.sp,
-                color = onSurfaceVariantColor()
-            )
+            Text(palace.wuxingShensha, fontSize = 11.sp, color = onSurfaceVariantColor())
             Spacer(modifier = Modifier.height(8.dp))
             LevelTag(level = palace.jiXiongLevel)
             if (highlight) {
@@ -382,7 +333,7 @@ private fun PalaceCard(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "最终结果",
+                        "最终结果",
                         fontSize = 10.sp,
                         color = cinnabarColor(),
                         fontWeight = FontWeight.Medium,
@@ -409,23 +360,23 @@ private fun CategoryReadings(palace: LiuRenPalace) {
 
     categories.forEachIndexed { index, (title, content) ->
         val isExpanded = expandedIndex == index
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
-                .shadow(
-                    elevation = if (isExpanded) 4.dp else 2.dp,
-                    shape = RoundedCornerShape(12.dp),
-                    ambientColor = Color.Black.copy(alpha = 0.03f),
-                    spotColor = Color.Black.copy(alpha = 0.06f)
-                )
-                .clickable { expandedIndex = if (isExpanded) -1 else index },
+        val arrowRotation by animateFloatAsState(
+            targetValue = if (isExpanded) 180f else 0f,
+            animationSpec = tween(Motion.MICRO),
+            label = "arrowRotation"
+        )
+        ClickableCard(
+            onClick = { expandedIndex = if (isExpanded) -1 else index },
+            modifier = Modifier.padding(bottom = 8.dp),
+            pressedScale = 0.98f,
             shape = RoundedCornerShape(12.dp),
-            color = surfaceColor(),
-            border = androidx.compose.foundation.BorderStroke(
-                0.5.dp,
-                if (isExpanded) cinnabarColor().copy(alpha = 0.3f) else outlineColor().copy(alpha = 0.2f)
-            )
+            borderColor = if (isExpanded) {
+                cinnabarColor().copy(alpha = 0.35f)
+            } else {
+                outlineColor().copy(alpha = 0.2f)
+            },
+            elevation = if (isExpanded) 3.dp else 1.dp,
+            onClickLabel = if (isExpanded) "收起$title" else "展开$title"
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
@@ -433,33 +384,25 @@ private fun CategoryReadings(palace: LiuRenPalace) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // 装饰小方块
-                        Box(
-                            modifier = Modifier
-                                .size(4.dp)
-                                .clip(RoundedCornerShape(1.dp))
-                                .background(if (isExpanded) cinnabarColor() else AntiqueGold.copy(alpha = 0.6f))
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            title,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = inkDarkColor(),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = inkDarkColor(),
+                        fontWeight = FontWeight.Medium
+                    )
                     Icon(
-                        if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = null,
-                        tint = onSurfaceVariantColor(),
-                        modifier = Modifier.size(20.dp)
+                        Icons.Default.ExpandMore,
+                        contentDescription = if (isExpanded) "收起" else "展开",
+                        tint = if (isExpanded) cinnabarColor() else onSurfaceVariantColor(),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .graphicsLayer { rotationZ = arrowRotation }
                     )
                 }
                 AnimatedVisibility(
                     visible = isExpanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
+                    enter = expandVertically(tween(Motion.MEDIUM)) + fadeIn(tween(Motion.MEDIUM)),
+                    exit = shrinkVertically(tween(Motion.SHORT)) + fadeOut(tween(Motion.SHORT))
                 ) {
                     Column(modifier = Modifier.padding(top = 10.dp)) {
                         DecorativeDivider()
@@ -479,64 +422,12 @@ private fun CategoryReadings(palace: LiuRenPalace) {
 }
 
 @Composable
-private fun YiJiRow(suitable: String, avoid: String) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        // 宜
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(JiGreen.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("宜", color = JiGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("宜", color = JiGreen, fontWeight = FontWeight.Medium, fontSize = 13.sp)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                suitable,
-                style = MaterialTheme.typography.bodyMedium,
-                color = onSurfaceColor(),
-                lineHeight = 20.sp
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        // 忌
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(XiongRed.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("忌", color = XiongRed, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("忌", color = XiongRed, fontWeight = FontWeight.Medium, fontSize = 13.sp)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                avoid,
-                style = MaterialTheme.typography.bodyMedium,
-                color = onSurfaceColor(),
-                lineHeight = 20.sp
-            )
-        }
-    }
-}
-
-@Composable
 private fun UnsupportedScreen(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundGradient()),
+            .background(backgroundGradient())
+            .navigationBarsInset(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

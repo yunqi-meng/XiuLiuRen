@@ -1,18 +1,18 @@
 package com.xiaoliuren.app.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,20 +24,16 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
-
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import com.xiaoliuren.app.data.CurrentTimeInfo
-import com.xiaoliuren.app.ui.components.DisclaimerBar
-import com.xiaoliuren.app.ui.components.DecorativeDivider
-import com.xiaoliuren.app.ui.components.GradientButton
-import com.xiaoliuren.app.ui.components.InfoCard
-import com.xiaoliuren.app.ui.components.KeyValueRow
-import com.xiaoliuren.app.ui.components.SealStamp
+import com.xiaoliuren.app.ui.components.*
 import com.xiaoliuren.app.ui.theme.*
 import com.xiaoliuren.app.viewmodel.DivineViewModel
 
@@ -52,13 +48,13 @@ fun HomeScreen(
     onAbout: () -> Unit
 ) {
     val timeInfo by viewModel.currentTimeInfo.collectAsState()
-    var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        visible = true
         while (true) {
             viewModel.refreshCurrentTime()
-            delay(1000L)
+            // 界面只显示到「分」，而刷新一次要重算农历 + 二十四节气。
+            // 睡到下一个整分钟再刷新，省掉大量无意义的历法计算与重组。
+            delay(60_000L - System.currentTimeMillis() % 60_000L + 50L)
         }
     }
 
@@ -70,130 +66,131 @@ fun HomeScreen(
     ) {
         DisclaimerBar(text = "本工具仅供民俗文化娱乐，不构成任何决策建议")
 
-        // ===== 装饰性标题区 =====
-        Box(
+        // ===== 标题区 =====
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 32.dp, bottom = 8.dp),
-            contentAlignment = Alignment.Center
+                .padding(top = 30.dp, bottom = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // 印章标记
-                SealStamp(text = "壬", size = 56, color = Cinnabar)
-                Spacer(modifier = Modifier.height(16.dp))
-                // 主标题
-                Text(
-                    text = "小六壬时课",
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = inkDarkColor(),
-                    letterSpacing = 6.sp
+            SealStamp(text = "壬", size = 56, color = Cinnabar)
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = "小六壬时课",
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+                color = inkDarkColor(),
+                letterSpacing = 6.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(1.dp)
+                        .drawBehind {
+                            drawRect(
+                                Brush.horizontalGradient(
+                                    listOf(Color.Transparent, AntiqueGold)
+                                )
+                            )
+                        }
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                // 装饰线
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    // 左装饰线
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(1.dp)
-                            .drawBehind {
-                                drawRect(
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(Color.Transparent, AntiqueGold)
-                                    )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "民俗文化娱乐参考",
+                    fontSize = 12.sp,
+                    color = cinnabarColor(),
+                    letterSpacing = 2.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(1.dp)
+                        .drawBehind {
+                            drawRect(
+                                Brush.horizontalGradient(
+                                    listOf(AntiqueGold, Color.Transparent)
                                 )
-                            }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "民俗文化娱乐参考",
-                        fontSize = 12.sp,
-                        color = cinnabarColor(),
-                        letterSpacing = 2.sp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    // 右装饰线
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(1.dp)
-                            .drawBehind {
-                                drawRect(
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(AntiqueGold, Color.Transparent)
-                                    )
-                                )
-                            }
-                    )
-                }
+                            )
+                        }
+                )
             }
         }
 
-        AnimatedVisibility(
-            visible = visible,
-            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 3 }),
-            exit = fadeOut() + slideOutVertically()
-        ) {
-            // ===== 当前时间卡片 =====
+        // ===== 当前时间卡片 =====
+        AnimatedEntry(index = 1) {
             if (timeInfo != null) {
                 TimeInfoCard(timeInfo = timeInfo!!)
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(22.dp))
 
-        // ===== 一键起课按钮 =====
-        GradientButton(
-            text = "一  键  起  课",
-            onClick = onDivineNow,
-            modifier = Modifier.padding(horizontal = 24.dp),
-            enabled = !isCalculating && (timeInfo?.supported != false),
-            isLoading = isCalculating,
-            height = 56,
-            fontSize = 18
-        )
+        // ===== 一键起课 =====
+        AnimatedEntry(index = 2) {
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                GradientButton(
+                    text = "一键起课",
+                    onClick = onDivineNow,
+                    enabled = !isCalculating && (timeInfo?.supported != false),
+                    isLoading = isCalculating,
+                    height = 56,
+                    fontSize = 18
+                )
+                if (timeInfo?.supported == false) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "当前时间超出 1900–2100 年有效范围，无法起课",
+                        fontSize = 12.sp,
+                        color = levelColorThemed(3),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // ===== 自定义时间按钮 =====
-        OutlinedButton(
-            onClick = onCustomTime,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .height(50.dp),
-            shape = RoundedCornerShape(25.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = inkDarkColor()
-            ),
-            border = androidx.compose.foundation.BorderStroke(1.dp, outlineColor())
-        ) {
-            Icon(Icons.Default.EditCalendar, contentDescription = null, modifier = Modifier.size(20.dp), tint = cinnabarColor())
-            Spacer(modifier = Modifier.width(10.dp))
-            Text("自定义时间起课", fontSize = 15.sp, letterSpacing = 1.sp)
+        // ===== 自定义时间 =====
+        AnimatedEntry(index = 3) {
+            OutlinedButton(
+                onClick = onCustomTime,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(25.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = inkDarkColor()),
+                border = androidx.compose.foundation.BorderStroke(1.dp, outlineColor())
+            ) {
+                Icon(
+                    Icons.Default.EditCalendar,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = cinnabarColor()
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("自定义时间起课", fontSize = 15.sp, letterSpacing = 1.sp)
+            }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // ===== 装饰分隔线 =====
-        DecorativeDivider(modifier = Modifier.padding(horizontal = 40.dp))
-
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         // ===== 底部功能入口 =====
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            FeatureEntry(Icons.Default.MenuBook, "六宫知识库", onKnowledge)
-            FeatureEntry(Icons.Default.History, "历史记录", onHistory)
-            FeatureEntry(Icons.Default.Info, "关于", onAbout)
+        AnimatedEntry(index = 4) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                FeatureEntry(Icons.Default.AutoStories, "六宫知识库", onKnowledge)
+                FeatureEntry(Icons.Default.History, "历史记录", onHistory)
+                FeatureEntry(Icons.Default.Info, "关于", onAbout)
+            }
         }
 
         Spacer(modifier = Modifier.height(28.dp))
@@ -218,6 +215,9 @@ fun HomeScreen(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        // 底部避让导航栏 / 手势条（背景渐变依然铺满）
+        BottomInsetSpacer()
     }
 }
 
@@ -235,16 +235,13 @@ private fun TimeInfoCard(timeInfo: CurrentTimeInfo) {
                 color = inkDarkColor(),
                 fontWeight = FontWeight.SemiBold
             )
-            // 实时指示灯
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(JiGreen.copy(alpha = 0.8f))
-            )
+            LiveDot()
         }
         Spacer(modifier = Modifier.height(14.dp))
-        KeyValueRow(key = "公历", value = "${timeInfo.solarYear}-${String.format("%02d", timeInfo.solarMonth)}-${String.format("%02d", timeInfo.solarDay)} ${String.format("%02d", timeInfo.solarHour)}:${String.format("%02d", timeInfo.solarMinute)}")
+        KeyValueRow(
+            key = "公历",
+            value = "${timeInfo.solarYear}-${"%02d".format(timeInfo.solarMonth)}-${"%02d".format(timeInfo.solarDay)} ${"%02d".format(timeInfo.solarHour)}:${"%02d".format(timeInfo.solarMinute)}"
+        )
         Spacer(modifier = Modifier.height(10.dp))
         KeyValueRow(key = "农历", value = timeInfo.lunarString)
         Spacer(modifier = Modifier.height(10.dp))
@@ -254,6 +251,27 @@ private fun TimeInfoCard(timeInfo: CurrentTimeInfo) {
     }
 }
 
+/** 呼吸实时指示灯 */
+@Composable
+private fun LiveDot() {
+    val transition = rememberInfiniteTransition(label = "liveDot")
+    val alpha by transition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1100),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "liveDotAlpha"
+    )
+    Box(
+        modifier = Modifier
+            .size(8.dp)
+            .clip(RoundedCornerShape(50))
+            .background(JiGreen.copy(alpha = alpha))
+    )
+}
+
 @Composable
 private fun FeatureEntry(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -261,15 +279,22 @@ private fun FeatureEntry(
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = LocalHapticFeedback.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .pressScale(interactionSource, pressedScale = 0.9f)
             .clip(RoundedCornerShape(16.dp))
             .clickable(
                 interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
+                indication = LocalIndication.current,
+                onClickLabel = label,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                }
             )
+            // 触摸目标至少 48dp：图标容器 54dp + padding，已满足
             .padding(10.dp)
     ) {
         Surface(
@@ -277,10 +302,10 @@ private fun FeatureEntry(
             modifier = Modifier
                 .size(54.dp)
                 .shadow(
-                    elevation = 3.dp,
+                    elevation = 2.dp,
                     shape = RoundedCornerShape(18.dp),
-                    ambientColor = Color.Black.copy(alpha = 0.04f),
-                    spotColor = Color.Black.copy(alpha = 0.08f)
+                    ambientColor = Color.Black.copy(alpha = 0.03f),
+                    spotColor = Color.Black.copy(alpha = 0.06f)
                 ),
             color = Color.Transparent
         ) {
@@ -288,18 +313,17 @@ private fun FeatureEntry(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                surfaceVariantColor(),
-                                surfaceColor()
-                            )
+                        Brush.radialGradient(
+                            listOf(surfaceVariantColor(), surfaceColor())
                         )
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon,
-                    contentDescription = label,
+                    // 图标只是装饰，文字标签已经说明了用途；
+                    // 两者都设描述会让 TalkBack 连着念两遍
+                    contentDescription = null,
                     tint = cinnabarColor(),
                     modifier = Modifier.size(26.dp)
                 )

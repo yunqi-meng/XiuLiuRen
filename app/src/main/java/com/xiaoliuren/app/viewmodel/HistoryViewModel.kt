@@ -21,6 +21,11 @@ class HistoryViewModel(private val repository: HistoryRepository) : ViewModel() 
         viewModelScope.launch { repository.deleteById(id) }
     }
 
+    /** 撤销删除：把原记录按原 id 写回去 */
+    fun restore(record: HistoryRecord) {
+        viewModelScope.launch { repository.restore(record) }
+    }
+
     fun clearAll() {
         viewModelScope.launch { repository.clearAll() }
     }

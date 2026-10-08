@@ -1,132 +1,186 @@
-# 小六壬时课 App — 全面 UI 美化优化总览
+# 小六壬时课 App — UI 美化与交互优化总览
 
-## 工作概述
-
-对「小六壬时课」Android Jetpack Compose 应用的全部前端页面进行了系统性美化优化，涵盖设计系统升级、组件增强、页面重构三大维度，共修改 13 个文件。
+> 记录两轮前端优化的完整内容。第二轮（2026-10-08）以「修复真实缺陷 + 无障碍 + 主题一致性」为主。
 
 ---
 
-## 一、设计系统升级
+# 第二轮 · 2026-10-08
 
-### 1. 色彩体系 (Color.kt)
-- 扩展墨色系（新增 InkFade 中间色阶）
-- 扩展朱砂系（新增 CinnabarBright / CinnabarDeep）
-- 扩展米白系（新增 RiceBright / PaperDark）
-- **新增装饰金/铜色系**（AntiqueGold / AntiqueGoldLight / AntiqueGoldDeep / BronzeLine / BronzeLineLight）— 为传统中式美学增加点缀色
-- 新增 SurfaceElevated / BackgroundGradientTop / BackgroundGradientBottom
-- **完整暗色主题色集**（DarkInkBlack → DarkAntiqueGold，共 14 个暗色色值）
-- 新增 levelColorDark() 函数支持暗色主题下的吉凶色
+## 本轮目标
 
-### 2. 主题系统 (Theme.kt)
-- **新增完整暗色主题**（DarkColorScheme）— 自动跟随系统暗色模式
-- 排版系统升级：全部 TextStyle 增加字间距（letterSpacing）和行高（lineHeight）
-- 新增形状系统（AppShapes）— 4dp 基准阶梯
-- **新增渐变画笔工具**：BackgroundBrushLight/Dark、CinnabarGradient、DecorativeLineBrush、GoldLineBrush
-- **新增 10 个 @Composable 主题色函数**：backgroundGradient()、surfaceColor()、cinnabarColor() 等，实现明暗主题自动适配
-- 状态栏透明化 + 图标明暗自动切换
+对 Material3 + Jetpack Compose 前端做一次系统性复查，重点不在「加装饰」，而在**修掉已经存在的真实缺陷**，并把设计系统的约束补全。
 
-### 3. XML 资源
-- colors.xml 新增全部新色彩定义
-- themes.xml 状态栏透明化 + LightStatusBar/LightNavigationBar 属性
-- values-night/themes.xml 暗色主题适配
+## 一、修掉的缺陷（按严重度）
 
----
+### P0 · 深色主题下顶栏标题不可读
 
-## 二、通用组件增强 (CommonComponents.kt)
+`AppTypography` 的每一个 `TextStyle` 都写死了 `color = InkBlack / InkDark / OnSurface ...`。
 
-| 组件 | 美化内容 |
-|------|----------|
-| DisclaimerBar | 渐变背景（深朱砂→朱砂）、字间距 |
-| InfoCard | 14dp 圆角、精致阴影、顶部朱砂金渐变装饰线、描边 |
-| SectionTitle | 渐变竖条（朱砂→金）、右侧三装饰点 |
-| LevelTag | 水平渐变填充、描边、字间距 |
-| KeyValueRow | 装饰小铜点、优化间距 |
-| EntertainmentFooter | 装饰描边、内边距优化 |
-| **GradientButton** (新增) | 水平渐变按钮、彩色阴影、按压动画、loading 状态 |
-| **DecorativeDivider** (新增) | 七色渐变分隔线（透明→铜→金→朱砂→金→铜→透明）|
-| **SealStamp** (新增) | 印章风格圆形标记，径向渐变+环形描边 |
-| **OrnateCard** (新增) | 四角装饰线卡片，古风边框效果 |
+Compose 文本的取色优先级是 **`Text(color =)` > `style.color` > `LocalContentColor`**，
+而 `Text(style = MaterialTheme.typography.xxx)` 拿到的正是 `style.color`。
+结果：MaterialTheme 的 `titleContentColor` / `LocalContentColor` 被整体架空 ——
+暗色模式下顶栏标题拿到 `InkDark (#2B2B2B)`，压在 `#0D0D0D` 背景上几乎不可见。
 
----
+**修复**：Typography 里移除全部硬编码颜色，只保留字号/字重/字距/行高，颜色交回主题。
+同时补齐 M3 缺失的 `displaySmall` / `headlineSmall` / `titleSmall`，避免回落到系统默认值造成层级不统一。
 
-## 三、页面美化（7 个屏幕）
+### P0 · Android 15+ 强制 edge-to-edge 下内容被系统栏遮挡
 
-### HomeScreen（首页）
-- 渐变背景 + 印章式标题（「壬」字朱砂印章）
-- 主标题 36sp + 6sp 字间距 + 左右装饰渐变线
-- 时间卡片实时指示灯（绿色脉点）
-- GradientButton 渐变起课按钮 + 彩色阴影
-- 功能入口：径向渐变图标容器 + 阴影
-- 装饰分隔线 + 底部免责提示框
+`MainActivity` 里 `enableEdgeToEdge()` 紧接着 `WindowCompat.setDecorFitsSystemWindows(window, true)` ——
+后者把前者撤销了。但 `targetSdk = 36`（Android 15+）下 edge-to-edge 是**强制**的，
+`setDecorFitsSystemWindows(true)` 不再生效。
 
-### ResultScreen（结果页）
-- 透明 TopAppBar + 渐变背景
-- 三宫卡片：步骤序号圆标、顶部装饰条、吉凶色阴影
-- OrnateCard 古诀区（四角装饰线）
-- 综合断语 OrnateCard（吉凶色装饰）
-- 分类解读：展开时朱砂描边 + 装饰小方块 + 装饰分隔线
-- 宜忌区：圆形「宜/忌」标记
+与此同时，全项目 `grep` 不到任何 `Scaffold` / `WindowInsets` / `statusBarsPadding`，
+7 个页面的根容器都是裸 `Column(fillMaxSize)`。
 
-### CustomTimeScreen（自定义时间页）
-- 渐变背景 + 透明 TopAppBar
-- 日期/时间选择卡片：径向渐变图标容器 + 精致阴影 + 描边
-- 装饰分隔线 + 印章式「预」字标记
-- GradientButton 渐变测算按钮
+**结果**：首页顶部的深朱砂免责条被状态栏压住，各页底部内容被导航栏 / 手势条压住。
 
-### HistoryScreen（历史记录页）
-- 渐变背景 + 空状态印章（「空」字）
-- 历史卡片：左侧吉凶色渐变装饰条 + 精致阴影
-- 宫位标签（PalaceChip）圆角优化
-- 装饰分隔线 + AlertDialog 圆角
+**修复**：
+- 删掉矛盾的 `setDecorFitsSystemWindows(window, true)`；
+- `Theme.kt` 同步切换状态栏与导航栏图标明暗；
+- 新增 `Modifier.navigationBarsInset()` 与 `BottomInsetSpacer()`；
+- `DisclaimerBar` 改为「背景全出血 + 文字避让状态栏」；
+- 6 个带顶栏的页面内容区加 `navigationBarsInset()`（顶栏自身的 `TopAppBarDefaults.windowInsets` 已自动处理状态栏）。
 
-### KnowledgeScreen（知识库列表）
-- 渐变背景 + 口诀卡片顶部装饰条
-- 口诀区装饰小方块标记
-- 六宫列表项：左侧吉凶色渐变条 + 径向渐变宫位标记 + ChevronRight 箭头
+### P1 · 深色主题下「时宫」高亮卡片是一块刺眼白斑
 
-### KnowledgeDetailScreen（知识库详情）
-- 宫位标识头部（80dp 圆形标记 + LevelTag）
-- OrnateCard 古诀区
-- 分类解读：顶部装饰线 + 装饰小方块 + 朱砂色标题
-- 宜忌区圆形标记
+`ThreePalaceRow` / `KnowledgeDetailScreen` / `KnowledgeScreen` 用的是 `levelColorLight()`，
+它在浅色主题下返回 `#E8F5E9` 这类浅色底 —— 直接放到深色主题上就是一块亮白。
 
-### AboutScreen（关于页）
-- 装饰性应用图标（88dp 黑底+金边+「六壬時課」双行文字）
-- 版本号左右装饰渐变线
-- 算法说明：装饰分隔线 + 要点列表（朱砂小圆点）
-- 使用边界：要点列表（金色小方块）
-- 底部印章（「印」字）
+讽刺的是项目里**已经写了** `levelColorDark()`，但从未被调用过（死代码）。
 
----
+**修复**：新增 `levelSurfaceColor(level)` 按主题分派，`levelColorDark()` 终于用上了；
+新增 `levelColorThemed(level)`，暗色主题下吉凶色使用提亮版本。
 
-## 四、技术要点
+### P1 · `LevelTag` 文字对比度不达标
 
-- **零新依赖**：仅使用 Compose 内置 API（Brush/drawBehind/shadow/border）
-- **暗色主题自动适配**：通过 isSystemInDarkTheme() + 10 个 @Composable 主题色函数
-- **渐变系统**：水平/垂直/径向渐变覆盖背景、按钮、装饰线、图标
-- **drawBehind 自定义绘制**：四角装饰线、顶部装饰条、分隔线
-- **编译验证**：`./gradlew :app:compileDebugKotlin` BUILD SUCCESSFUL
+「半吉半凶」标签是白字压 `#C9A227` 黄底，对比度约 **2.36:1**，远低于 WCAG AA 的 4.5:1。
 
----
+**修复**：新增 `onColorFor(background)`，按背景相对亮度自动选深字或浅字
+（阈值取黑/白等对比度交叉点 L ≈ 0.179）。黄底改用墨字后约 **7.1:1**。
 
-## 五、修改文件清单
+### P1 · 删除历史记录无法撤销、触摸目标过小
+
+- 单条删除点下去就直接删，没有任何后悔药；
+- 删除按钮 `IconButton(modifier = Modifier.size(28.dp))`，低于 48dp 最小触摸目标。
+
+**修复**：
+- 删除后弹 Snackbar 提供「撤销」，撤销即按原 id 写回（DAO 的 insert 是 REPLACE 策略）；
+- 去掉显式 `size(28.dp)`，恢复 IconButton 默认 48dp 触摸目标，图标本身缩到 18dp。
+
+### P2 · 首页每秒重算一次农历与二十四节气
+
+`LaunchedEffect` 里 `while (true) { refreshCurrentTime(); delay(1000) }`，
+但界面只显示到「分」。每秒一次完整的 `LunarCalendar` + `SolarTerms` 计算纯属浪费。
+
+**修复**：睡到下一个整分钟边界再刷新。
+
+### P2 · 首屏入场动画导致布局跳动
+
+`AnimatedEntry` 用 `AnimatedVisibility` 切换可见性 —— 动画开始前元素**不占布局高度**，
+页面先「短一截」再撑开，首屏可见明显跳动；而且 `ResultScreen` 有 8 个区块，
+最后一个要等 360ms 才出现。
+
+**修复**：改为只操作渲染层（`graphicsLayer` 的 alpha + translationY），
+布局从头到尾稳定，动画期间也不触发重新布局。步长按 M3 建议从 45ms 收到 35ms。
+
+### P2 · 组合期间直接调用 `popBackStack()`
+
+`AppNavigation` 的 `Routes.RESULT` 分支在 `result == null` 时**直接在组合里**调
+`navController.popBackStack()` —— 每次重组都会重复执行。
+
+**修复**：移入 `LaunchedEffect`。
+
+### P2 · 项目在本机无法构建
+
+两处构建阻塞：
+1. Gradle 8.14.3 的 `kotlin-dsl/scripts/*/metadata.bin` 缓存损坏；
+2. `app/build.gradle.kts` 里 `compileSdkMinor = 1` 让 AGP 去找 `platforms;android-36.1`，
+   而本机 SDK 只有 `android-36`，且 SDK 源被代理拦截无法补装。
+
+**修复**：清掉损坏缓存；移除 `compileSdkMinor`，统一用已安装的 `android-36`（与 `targetSdk = 36` 一致）。
+
+### P3 · 其他
+
+- `DecorativeDivider` 每帧重建渐变画笔 → 提到 composable 作用域并 `remember`；
+- 删除三个从未被使用的顶层画笔（`CinnabarGradient` / `DecorativeLineBrush` / `GoldLineBrush`）——
+  它们是死代码，且写死了浅色主题颜色，留着是个坑；
+- `Icons.Default.MenuBook` / `ArrowBack` 迁移到 AutoMirrored 版本。
+
+## 二、交互与无障碍增强
+
+| 项 | 内容 |
+|---|---|
+| `ClickableCard`（新增） | 把散落在 3 个页面的「Surface + pressScale + shadow + clickable + haptic」收敛为一处，参数不再漂移；支持 `onClickLabel` |
+| `AnimatedEntry` | 只动渲染层，消除布局跳动；步长 45ms → 35ms |
+| 触觉反馈 | 保持原有轻触反馈，统一从 `LocalHapticFeedback` 取 |
+| 无障碍语义 | `SectionTitle` 加 `heading()`，读屏可按标题跳转；`SealStamp` 用 `clearAndSetSemantics {}` 从朗读中摘除；`FeatureEntry` 图标改 `contentDescription = null`（文字标签已表达用途，避免念两遍） |
+| 点击语义 | 知识库卡片「查看XX详解」、结果页「展开/收起XX」、时间选择卡「选择日期，当前 2026年10月8日」 |
+| 对比度 | `LevelTag` 白字黄底 → 墨字黄底（2.36:1 → 7.1:1） |
+| 触摸目标 | 历史记录删除按钮 28dp → 48dp |
+
+## 三、改动文件
 
 | 文件 | 改动 |
 |------|------|
-| ui/theme/Color.kt | 全面重写 |
-| ui/theme/Theme.kt | 全面重写 |
-| ui/components/CommonComponents.kt | 全面重写 |
-| ui/screens/HomeScreen.kt | 全面重写 |
-| ui/screens/ResultScreen.kt | 全面重写 |
-| ui/screens/CustomTimeScreen.kt | 全面重写 |
-| ui/screens/HistoryScreen.kt | 全面重写 |
-| ui/screens/KnowledgeScreen.kt | 全面重写 |
-| ui/screens/KnowledgeDetailScreen.kt | 全面重写 |
-| ui/screens/AboutScreen.kt | 全面重写 |
-| res/values/colors.xml | 扩展 |
-| res/values/themes.xml | 更新 |
-| res/values-night/themes.xml | 更新 |
+| `ui/theme/Theme.kt` | 重写：Typography 去硬编码色、补全字阶、`LocalIsDarkTheme`、主题色助手、`Motion` 动效令牌、删死代码 |
+| `ui/theme/Color.kt` | `XiongRedDeep` 具名化、`JiGreenLight` 压暗以达标对比度 |
+| `ui/components/CommonComponents.kt` | 重写：`ClickableCard` / `navigationBarsInset` / `BottomInsetSpacer` / `onColorFor` 新增，`AnimatedEntry` 重做，`DisclaimerBar` 全出血，语义补全 |
+| `MainActivity.kt` | 移除矛盾的 `setDecorFitsSystemWindows` |
+| `ui/navigation/AppNavigation.kt` | 动效令牌化、`popBackStack` 移入副作用 |
+| `ui/screens/HomeScreen.kt` | insets、按分钟刷新、禁用原因提示、文字间距去冗余 |
+| `ui/screens/ResultScreen.kt` | insets、暗色高亮卡片、`ClickableCard`、点击语义 |
+| `ui/screens/CustomTimeScreen.kt` | 免责条全出血对齐、insets、`ClickableCard` |
+| `ui/screens/HistoryScreen.kt` | insets、删除可撤销、触摸目标 |
+| `ui/screens/KnowledgeScreen.kt` | insets、主题色分派、`ClickableCard` |
+| `ui/screens/KnowledgeDetailScreen.kt` | insets、主题色分派 |
+| `ui/screens/AboutScreen.kt` | insets |
+| `data/HistoryRepository.kt` | 新增 `restore()` |
+| `viewmodel/HistoryViewModel.kt` | 新增 `restore()` |
+| `app/build.gradle.kts` | 移除 `compileSdkMinor`（改为编译 `android-36`） |
+
+## 四、验证
+
+```
+gradle :app:compileDebugKotlin   → BUILD SUCCESSFUL
+```
+
+零新增依赖，全部使用 Compose 内置 API（`Brush` / `drawBehind` / `shadow` / `border` / `graphicsLayer` / `WindowInsets`）。
+
+## 五、已知遗留
+
+- 所有界面文案仍是硬编码中文字面量，`strings.xml` 基本没被使用 —— 单语言应用可用，
+  但要做多语言需要先收敛到资源。
+- 尚未接入「减少动态效果」（Remove animations）系统设置的无障碍开关。
+- 缺少 Compose UI 测试与截图回归。
 
 ---
 
-*生成时间：2026-08-26*
+# 第一轮 · 2026-08-26
+
+## 设计系统
+
+- **色彩体系**：扩展墨色系 / 朱砂系 / 米白系，新增装饰金铜色系，新增 `SurfaceElevated` 与背景渐变色，补齐 14 个暗色主题色值
+- **主题系统**：新增完整暗色主题、排版加字间距与行高、新增 4dp 基准形状阶梯、状态栏透明化
+- **XML 资源**：`colors.xml` / `themes.xml` / `values-night/themes.xml`
+
+## 通用组件
+
+| 组件 | 内容 |
+|------|------|
+| DisclaimerBar | 渐变背景、字间距 |
+| InfoCard | 14dp 圆角、精致阴影、描边 |
+| SectionTitle | 渐变竖条 |
+| LevelTag | 水平渐变填充、描边 |
+| GradientButton（新增） | 渐变按钮、彩色阴影、按压动画、loading 态 |
+| DecorativeDivider（新增） | 七色渐变分隔线 |
+| SealStamp（新增） | 印章风格圆形标记 |
+| OrnateCard（新增） | 四角装饰线卡片 |
+
+## 页面
+
+7 个页面统一为「渐变背景 + 中式古典美学」：印章式标题、古风卡片、装饰分隔线、吉凶色标识。
+
+---
+
+*第二轮生成时间：2026-10-08*

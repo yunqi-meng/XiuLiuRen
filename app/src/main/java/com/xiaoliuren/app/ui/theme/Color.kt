@@ -32,11 +32,12 @@ val BronzeLineLight = Color(0xFFC4AC8A)
 
 // ==================== 吉凶颜色 ====================
 val JiGreen = Color(0xFF3A7D44)
-val JiGreenLight = Color(0xFF5A9D64)
+val JiGreenLight = Color(0xFF4E8F58)
 val HalfYellow = Color(0xFFC9A227)
 val HalfYellowLight = Color(0xFFE9C247)
 val XiongRed = Color(0xFFB83A3A)
 val XiongRedLight = Color(0xFFD45E5E)
+val XiongRedDeep = Color(0xFF8B2A2A)
 
 // ==================== 功能色（浅色主题） ====================
 val Surface = Color(0xFFFAF6EE)
@@ -69,19 +70,17 @@ val DarkCinnabar = Color(0xFFD45E5E)
 val DarkCinnabarDark = Color(0xFFB83A3A)
 val DarkAntiqueGold = Color(0xFFC4A878)
 
-/** 根据吉凶等级获取颜色 */
+/** 根据吉凶等级获取颜色（亮色主题基准色） */
 fun levelColor(level: Int): Color = when (level) {
     0 -> JiGreen
     1 -> JiGreenLight
     2 -> HalfYellow
     3 -> XiongRed
-    4 -> XiongRedDark()
+    4 -> XiongRedDeep
     else -> InkLight
 }
 
-private fun XiongRedDark() = Color(0xFF8B2A2A)
-
-/** 根据吉凶等级获取浅色（用于背景） */
+/** 根据吉凶等级获取浅色底（亮色主题用） */
 fun levelColorLight(level: Int): Color = when (level) {
     0 -> Color(0xFFE8F5E9)
     1 -> Color(0xFFEFF7F0)
@@ -91,7 +90,7 @@ fun levelColorLight(level: Int): Color = when (level) {
     else -> SurfaceVariant
 }
 
-/** 暗色主题下的吉凶浅色 */
+/** 根据吉凶等级获取深色底（暗色主题用） */
 fun levelColorDark(level: Int): Color = when (level) {
     0 -> Color(0xFF1B3022)
     1 -> Color(0xFF1E2D24)

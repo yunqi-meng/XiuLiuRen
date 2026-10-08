@@ -8,7 +8,7 @@ import kotlin.math.floor
  * 数据范围：1900 年 - 2099 年
  * 数据格式（lunarInfo[year - 1900]）：
  *   bits 0-3  : 闰月月份（0 = 无闰月）
- *   bits 4-15 : 12 个月大小，bit(4+i) = 第(i+1)月（1 = 大月 30 天，0 = 小月 29 天）
+ *   bits 4-15 : 12 个月大小，bit(16-i) = 第 i 月（正月 = bit15，腊月 = bit4；1 = 大月 30 天，0 = 小月 29 天）
  *   bit  16   : 闰月大小（1 = 大月 30 天，0 = 小月 29 天）
  *
  * 农历 1900 年正月初一 = 公历 1900 年 1 月 31 日
@@ -71,7 +71,7 @@ object LunarCalendar {
     /** 返回 [year] 年 [month] 月（1-12）的天数 */
     fun monthDays(year: Int, month: Int): Int {
         val info = lunarInfo[year - MIN_YEAR]
-        return if (((info shr (4 + month - 1)) and 0x1) == 1) 30 else 29
+        return if (((info shr (16 - month)) and 0x1) == 1) 30 else 29
     }
 
     /** 返回 [year] 年闰月的天数（无闰月返回 0） */
@@ -99,7 +99,7 @@ object LunarCalendar {
     fun solarToLunar(year: Int, month: Int, day: Int): LunarDate? {
         if (!isSupported(year)) return null
         // 边界：早于 1900 年正月初一（公历 1900-1-31）
-        if (year == 1900 && (month < 1 || (month == 1 && day < 31))) return null
+        if (year == 1900 && month == 1 && day < 31) return null
 
         // 计算公历日期距 1900-1-31 的天数
         var offset = daysBetween(1900, 1, 31, year, month, day)
